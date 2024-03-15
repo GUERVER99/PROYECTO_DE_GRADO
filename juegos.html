@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Preguntas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #444;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 30%;
+            box-sizing: border-box;
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            padding: 60px 20px 20px;
+            text-align: center;
+        }
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .selected {
+            background-color: #45a049 !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Juego de Preguntas</h1>
+    </header>
+
+    <nav>
+        <a href="inicio.html">Inicio</a>
+        <a href="contenido.html">Contenido</a>
+        <a href="videos.html">Videos</a>
+        <a href="nosotros.html">Acerca de Nosotros</a>
+        <a href="contactos.html">Contacto</a>
+        <a href="login.html">Cerrar Sesión</a>
+    </nav>
+
+    <main>
+        <h2 id="question">Pregunta</h2>
+        <button onclick="checkAnswer('La maniobra de Heimlich')">La maniobra de Heimlich</button>
+        <button onclick="checkAnswer('Posición lateral de seguridad')">Posición lateral de seguridad</button>
+        <button onclick="checkAnswer('Enjuagar con agua fría')">Enjuagar con agua fría</button>
+        <button onclick="checkAnswer('Revisar la respiración y la circulación')">Revisar la respiración y la circulación</button>
+        
+        <p id="result"></p>
+        <button onclick="nextQuestion()">Siguiente Pregunta</button>
+        <button id="restartButton" onclick="restartGame()" style="display: none;">Volver a Intentar</button>
+    </main>
+
+    <footer>
+        <p>Ing Gerlin Victor © 2024 - Todos los derechos reservados</p>
+    </footer>
+
+    <script>
+        var questions = [
+            { question: "¿Cuál es la maniobra de Heimlich utilizada para ayudar a una persona que está atragantada?", answer: "La maniobra de Heimlich" },
+            { question: "¿Cuál es la posición adecuada para una persona que está experimentando un ataque epiléptico?", answer: "Posición lateral de seguridad" },
+            { question: "¿Qué se debe hacer en caso de una quemadura leve?", answer: "Enjuagar con agua fría" },
+            { question: "¿Cuál es la primera acción a tomar si encuentras a alguien inconsciente?", answer: "Revisar la respiración y la circulación" },
+            { question: "¿Cuál es el objetivo de la reanimación cardiopulmonar (RCP)?", answer: "Mantener la circulación sanguínea y la oxigenación del cuerpo" },
+            { question: "¿Qué se debe hacer si una persona tiene una herida profunda con una cuerda o un objeto incrustado?", answer: "No retirar el objeto y buscar ayuda médica" },
+            { question: "¿Qué se debe hacer si una persona experimenta una picadura de abeja o avispa?", answer: "Retirar el aguijón y aplicar compresas frías" },
+            { question: "¿Cuál es la mejor manera de tratar una lesión en el ojo?", answer: "Enjuagar con agua limpia y buscar atención médica" },
+            { question: "¿Qué hacer si una persona está experimentando una reacción alérgica grave (anafilaxia)?", answer: "Administrar epinefrina (adrenalina) y buscar ayuda médica de emergencia" },
+            { question: "¿Cuál es la forma adecuada de tratar una fractura cerrada?", answer: "Inmovilizar la extremidad lesionada y buscar atención médica" }
+        ];
+
+        var currentQuestionIndex = 0;
+        var timeLimit = 30 * 60; // 30 minutos en segundos
+        var timerInterval;
+
+        function startTimer() {
+            timerInterval = setInterval(function() {
+                timeLimit--;
+                if (timeLimit <= 0) {
+                    clearInterval(timerInterval);
+                    finishGame();
+                }
+            }, 1000);
+        }
+
+        function displayQuestion() {
+            var questionElement = document.getElementById("question");
+            questionElement.innerText = questions[currentQuestionIndex].question;
+        }
+
+        function checkAnswer(answer) {
+            var buttons = document.querySelectorAll("button");
+            buttons.forEach(function(button) {
+                button.classList.remove("selected");
+            });
+            event.target.classList.add("selected");
+
+            if (answer === questions[currentQuestionIndex].answer) {
+                questions[currentQuestionIndex].answeredCorrectly = true;
+            } else {
+                questions[currentQuestionIndex].answeredCorrectly = false;
+            }
+        }
+
+        function nextQuestion() {
+            var resultElement = document.getElementById("result");
+            resultElement.innerText = "";
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+            var mainElement = document.querySelector("main");
+            mainElement.innerHTML = "<h2>¡Juego completado!</h2><p>Tu calificación es: " + calculateScore() + "</p>";
+            document.getElementById("restartButton").style.display = "block";
+        }
+
+        function calculateScore() {
+            var correctAnswers = 0;
+            for (var i = 0; i < questions.length; i++) {
+                if (questions[i].answeredCorrectly) {
+                    correctAnswers++;
+                }
+            }
+            return correctAnswers + " / " + questions.length;
+        }
+
+        function restartGame() {
+            currentQuestionIndex = 0;
+            timeLimit = 30 * 60;
+            clearInterval(timerInterval);
+            displayQuestion();
+            startTimer();
+            document.getElementById("restartButton").style.display = "none";
+        }
+
+        // Iniciar el juego al cargar la página
+        window.onload = function() {
+            displayQuestion();
+            startTimer();
+        };
+    </script>
+</body>
+</html>
+
+
+
+
